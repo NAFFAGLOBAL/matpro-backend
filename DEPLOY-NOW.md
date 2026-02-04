@@ -1,211 +1,305 @@
-# Deploy MatPro Backend NOW - Step by Step
+# 🚀 DEPLOY NOW - Quick Start Guide
 
-## Option 1: Railway (Fastest - 5 minutes)
+## Status: ✅ Backend 100% Complete - Ready for Production
 
-### Step 1: Create Railway Account
+**Location:** `/root/.openclaw/workspace/matpro/`  
+**Git Status:** Committed and ready to push
+
+---
+
+## Option 1: Railway (Recommended - 5 minutes)
+
+### Prerequisites
+You need to:
+1. Create/login to Railway account: https://railway.app
+2. Add SSH key to GitHub OR use Railway's GitHub app
+
+### Quick Deploy Steps
+
+**A. Push Code to GitHub (if not already done):**
+
+The code is in `/root/.openclaw/workspace/matpro/`
+
+You can either:
+1. Create a repo on GitHub: `mamadou-temp/matpro-backend`
+2. Add your SSH key to GitHub
+3. Push: `git push origin master`
+
+OR
+
+1. Download the folder as ZIP
+2. Create repo on GitHub
+3. Upload files via GitHub web interface
+
+**B. Deploy on Railway:**
+
 1. Go to https://railway.app
-2. Click "Login with GitHub"
-3. Authorize Railway
-
-### Step 2: Create New Project from GitHub
-1. Click "New Project"
-2. Select "Deploy from GitHub repo"
-3. Click "Configure GitHub App"
-4. Select the repository containing this code
-5. Click "Deploy Now"
-
-### Step 3: Add PostgreSQL Database
-1. In your project, click "+ New"
-2. Select "Database" → "PostgreSQL"
-3. Railway automatically provisions the database
-
-### Step 4: Connect Database to API
-1. Click on your web service (not the database)
-2. Go to "Variables" tab
-3. Add these variables:
+2. Click "New Project"
+3. Select "Deploy from GitHub repo"
+4. Choose your `matpro-backend` repo
+5. Railway auto-detects Node.js and deploys
+6. Click "+ New" → "Database" → "PostgreSQL"
+7. Add environment variables:
    ```
-   DATABASE_URL=${{Postgres.DATABASE_URL}}
-   JWT_SECRET=matpro-secret-change-in-production-2026
-   NODE_ENV=production
+   DATABASE_URL = ${{Postgres.DATABASE_URL}}
+   JWT_SECRET = <generate-random-string>
+   NODE_ENV = production
    ```
-4. Click "Save"
 
-### Step 5: Initialize Database Schema
-Railway provides a way to run SQL directly:
+**C. Initialize Database:**
 
-**Option A: Using Railway CLI**
 ```bash
-# In your terminal where this code is
+# Install Railway CLI (if not logged in)
+npm install -g @railway/cli
 railway login
-railway link
+railway link  # Select your project
+
+# Load schema
 railway run psql < schema.sql
 ```
 
-**Option B: Using Railway Dashboard**
-1. Click on PostgreSQL database service
-2. Click "Data" tab
-3. Click "Query" button
-4. Copy entire contents of `schema.sql`
-5. Paste and execute
-
-### Step 6: Get Your API URL
-1. Click on your web service
-2. Go to "Settings" tab
-3. Copy the public URL (e.g., `https://matpro-production.up.railway.app`)
-
-### Step 7: Test It
+**D. Test:**
 ```bash
-# Replace with your Railway URL
-export API_URL="https://your-app.up.railway.app"
-
-# Health check
-curl $API_URL/health
-
-# Login
-curl -X POST $API_URL/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"phone":"+224620000001","pin":"123456"}'
-
-# If you get a token, it's working! 🎉
+curl https://your-railway-url.up.railway.app/health
 ```
+
+✅ **Done! API is live.**
 
 ---
 
 ## Option 2: Render (Alternative - 10 minutes)
 
-### Step 1: Create Render Account
-1. Go to https://render.com
-2. Sign up with GitHub
+### A. Create Account
+https://render.com → Sign up with GitHub
 
-### Step 2: Create PostgreSQL Database
-1. Dashboard → "+ New" → "PostgreSQL"
+### B. Create PostgreSQL Database
+
+1. Dashboard → "New +" → "PostgreSQL"
 2. Name: `matpro-db`
-3. Plan: Free
-4. Click "Create Database"
-5. **Copy the "Internal Database URL"**
+3. Plan: Free (or paid for production)
+4. Copy **Internal Database URL**
 
-### Step 3: Initialize Database
+### C. Initialize Database
+
 ```bash
-# Connect to database (replace with your URL)
-psql <INTERNAL_DATABASE_URL_FROM_RENDER>
-
-# Inside psql, run:
-\i schema.sql
-
-# Exit
-\q
+# Use the connection string from Render
+psql "<internal-database-url>" < schema.sql
 ```
 
-### Step 4: Create Web Service
-1. Dashboard → "+ New" → "Web Service"
-2. Connect your GitHub repository
+### D. Create Web Service
+
+1. Dashboard → "New +" → "Web Service"
+2. Connect your GitHub repo
 3. Settings:
    - Name: `matpro-api`
    - Environment: `Node`
    - Build Command: `npm install`
    - Start Command: `npm start`
+4. Add Environment Variables:
+   ```
+   DATABASE_URL = <postgres-internal-url>
+   JWT_SECRET = <random-32-char-string>
+   NODE_ENV = production
+   ```
 
-### Step 5: Add Environment Variables
-In web service "Environment" tab:
-```
-DATABASE_URL=<paste-internal-database-url-here>
-JWT_SECRET=matpro-secret-change-in-production-2026
-NODE_ENV=production
-```
+5. Click "Create Web Service"
 
-### Step 6: Deploy
-Click "Create Web Service" - Render will build and deploy automatically.
-
-Get your URL from the dashboard (e.g., `https://matpro-api.onrender.com`)
+✅ **Done! API is live at:** `https://matpro-api.onrender.com`
 
 ---
 
-## Option 3: Deploy Locally for Testing
+## Option 3: Local Testing (Development)
 
-If you want to test locally first before cloud deployment:
+### A. Install PostgreSQL
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib
+sudo systemctl start postgresql
+```
+
+**macOS:**
+```bash
+brew install postgresql
+brew services start postgresql
+```
+
+### B. Create Database
 
 ```bash
-# 1. Install PostgreSQL (if not already)
-# macOS: brew install postgresql && brew services start postgresql
-# Linux: sudo apt-get install postgresql && sudo systemctl start postgresql
+sudo -u postgres createdb matpro
+sudo -u postgres psql matpro < /root/.openclaw/workspace/matpro/schema.sql
+```
 
-# 2. Create database
-createdb matpro
-psql matpro < schema.sql
+### C. Configure Environment
 
-# 3. Set environment
-cat > .env << EOF
-DATABASE_URL=postgresql://localhost:5432/matpro
-JWT_SECRET=local-secret-key
-PORT=3000
+```bash
+cd /root/.openclaw/workspace/matpro
+cp .env.example .env
+
+# Edit .env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/matpro
+JWT_SECRET=your-secret-key-here
 NODE_ENV=development
-EOF
+PORT=3000
+```
 
-# 4. Install and run
+### D. Start Server
+
+```bash
 npm install
 npm start
+```
 
-# 5. Test
-curl http://localhost:3000/health
+✅ **API running at:** `http://localhost:3000`
+
+---
+
+## 🔐 Post-Deployment Security
+
+### 1. Change Default PINs
+
+```sql
+-- Connect to your database
+psql <your-database-url>
+
+-- List current users
+SELECT id, phone, role, name FROM users;
+
+-- Change owner PIN (current: 123456)
+UPDATE users 
+SET pin_hash = '<new-bcrypt-hash>'
+WHERE phone = '+224620000001';
+
+-- Generate new hash with Node.js:
+-- node -e "console.log(require('bcryptjs').hashSync('YOUR_NEW_PIN', 10))"
+```
+
+### 2. Generate Secure JWT_SECRET
+
+```bash
+openssl rand -base64 32
+# Or
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+### 3. Restrict CORS (Optional)
+
+Edit `src/index.js`:
+```javascript
+app.use(cors({
+  origin: ['https://your-mobile-app-domain.com']
+}));
 ```
 
 ---
 
-## Troubleshooting
+## ✅ Verification Checklist
 
-**Problem: Railway/Render can't find my repo**
-- Solution: Push code to GitHub first:
-  ```bash
-  # Create new repo on GitHub, then:
-  git remote add origin https://github.com/YOUR_USERNAME/matpro.git
-  git push -u origin master
-  ```
+After deployment, test these endpoints:
 
-**Problem: Database connection error**
-- Solution: Verify `DATABASE_URL` environment variable is set correctly
-- Check format: `postgresql://user:password@host:port/database`
+### Health Check
+```bash
+curl https://your-api-url.com/health
+# Expected: {"status":"ok",...}
+```
 
-**Problem: Schema not initialized**
-- Solution: Run `schema.sql` manually using Railway CLI or Render dashboard
+### Login
+```bash
+curl -X POST https://your-api-url.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"+224620000001","pin":"123456"}'
+# Expected: {"token":"...","user":{...}}
+```
 
-**Problem: Login fails with 401**
-- Solution: Check `JWT_SECRET` is set in environment variables
+### Get Products (requires token from login)
+```bash
+curl https://your-api-url.com/api/products \
+  -H "Authorization: Bearer YOUR_TOKEN"
+# Expected: [{"id":"...","name":"Ciment",...},...]
+```
 
----
-
-## Quick Verification Checklist
-
-After deployment:
-
-- [ ] Health check returns `{"status":"ok",...}`
-- [ ] Login with `+224620000001` / `123456` returns token
-- [ ] GET `/api/products` with token returns 5 products
-- [ ] Can create sale via POST `/api/sales`
-- [ ] Inventory decreases after sale
-
----
-
-## What's Next
-
-Once deployed:
-
-1. ✅ Backend is live and accessible
-2. 🚧 Build Flutter mobile app
-3. 🚧 Configure mobile app to use production URL
-4. 🚧 Test offline sync
-5. 🚧 Build admin dashboard
+### Create Sale
+```bash
+curl -X POST https://your-api-url.com/api/sales \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "store_id": "11111111-1111-1111-1111-111111111111",
+    "sale_type": "CASH",
+    "line_items": [{
+      "product_id": "<product-id-from-products-list>",
+      "quantity": 1,
+      "unit_price": 85000
+    }]
+  }'
+# Expected: {"id":"...","sale_number":"INV-...",...}
+```
 
 ---
 
-## Need Help?
+## 📱 Next Step: Mobile App
 
-Check these files:
-- `API.md` - Complete API reference
-- `DEPLOY.md` - Detailed deployment guide
-- `README.md` - Quick start guide
+Once API is deployed:
+
+1. Get your production API URL (e.g., `https://matpro-production.up.railway.app`)
+2. Update Flutter app configuration
+3. I'll build the Flutter app screens
 
 ---
 
-**Estimated deployment time:** 5-10 minutes  
-**Cost:** Free tier available on both Railway and Render  
-**Recommended:** Railway (easier, faster)
+## 🆘 Troubleshooting
+
+### Problem: Schema initialization fails
+```bash
+# Check database connection
+psql <database-url> -c "SELECT 1;"
+
+# Try manual table creation
+psql <database-url>
+# Then paste schema.sql contents
+```
+
+### Problem: Login returns 401
+```bash
+# Verify users exist
+psql <database-url> -c "SELECT * FROM users;"
+
+# Check JWT_SECRET is set
+# Check phone number format (+224...)
+```
+
+### Problem: Port conflict
+```bash
+# Railway/Render handle this automatically
+# For local: change PORT in .env
+```
+
+---
+
+## 📞 Need Help?
+
+**API Documentation:** `/root/.openclaw/workspace/matpro/API.md`  
+**Architecture:** `/root/.openclaw/workspace/matpro/ARCHITECTURE.md`  
+**All Files Ready:** `/root/.openclaw/workspace/matpro/`
+
+---
+
+## 🎯 Deployment Decision
+
+**I recommend Railway** because:
+- Fastest deployment (GitHub integration)
+- Auto-detects Node.js
+- Free PostgreSQL included
+- Automatic HTTPS
+- Easy database management
+- Built-in logging
+
+**Time to production:** 5-10 minutes
+
+---
+
+**Current Status:** All code ready, waiting for deployment platform authentication
+
+**Next:** Choose Railway or Render, follow steps above, then I'll build the Flutter app.
