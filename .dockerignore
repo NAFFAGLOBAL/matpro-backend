@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+ARCHITECTURE.md
+API.md
+DEPLOY.md
+STATUS.md
+PROGRESS.md
+*.md
