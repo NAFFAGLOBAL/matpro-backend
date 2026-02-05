@@ -151,7 +151,7 @@ CREATE INDEX idx_sales_status ON sales(status);
 
 CREATE TABLE sale_line_items (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  sale_id UUID REFERENCES sales(id) NOT NULL ON DELETE CASCADE,
+  sale_id UUID REFERENCES sales(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES products(id) NOT NULL,
   quantity DECIMAL(10,2) NOT NULL,
   unit_price DECIMAL(12,2) NOT NULL,
@@ -232,7 +232,7 @@ CREATE INDEX idx_po_status ON purchase_orders(status);
 
 CREATE TABLE purchase_order_items (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  po_id UUID REFERENCES purchase_orders(id) NOT NULL ON DELETE CASCADE,
+  po_id UUID REFERENCES purchase_orders(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES products(id) NOT NULL,
   quantity DECIMAL(10,2) NOT NULL,
   unit_cost DECIMAL(12,2) NOT NULL,
